@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>제주갈피 — 나의 제주 추억</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --sea: #2b7a9b;
+    --sea-deep: #1d5a75;
+    --sea-light: #e6f2f6;
+    --stone: #4a4a4a;
+    --stone-light: #f5f3f0;
+    --tangerine: #f28c28;
+    --line: #e2ded8;
+    --text: #2f2f2f;
+    --muted: #8a8580;
+    --bg: #faf8f5;
+    --nav-h: 64px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  html { overflow-y: scroll; }  /* 스크롤바가 생겼다 사라질 때 화면 폭이 변해 지도가 커보이는 현상 방지 */
+  body {
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    background: #e8e4de;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* ── 앱 프레임 (폰처럼 가운데 고정) ── */
+  .app {
+    max-width: 480px;
+    min-height: 100vh;
+    margin: 0 auto;
+    background: var(--bg);
+    box-shadow: 0 0 40px rgba(0,0,0,.12);
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ── 스플래시 ── */
+  #splash {
+    position: fixed;
+    top: 0; bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);   /* 앱 프레임(480px)과 같은 폭·위치로 맞춤 */
+    width: 100%; max-width: 480px;
+    z-index: 100;
+    overflow: hidden;
+    background: var(--sea-deep);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px;
+    transition: opacity .6s ease, visibility .6s;
+  }
+  #splash.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+  .splash-logo { font-size: 4rem; animation: splashPop .9s cubic-bezier(.2,1.4,.4,1) both; }
+  .splash-title { color: #fff; font-size: 1.9rem; font-weight: 800; letter-spacing: -0.5px; animation: splashUp .8s .25s ease both; }
+  .splash-title .dot { color: var(--tangerine); }
+  .splash-sub { color: rgba(255,255,255,.75); font-size: .92rem; animation: splashUp .8s .45s ease both; }
+  .splash-wave { position: absolute; bottom: 0; left: 0; right: 0; height: 90px; opacity: .25; }
+  @keyframes splashPop { 0% { opacity: 0; transform: scale(.4) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+  @keyframes splashUp { 0% { opacity: 0; transform: translateY(14px); } 100% { opacity: 1; transform: translateY(0); } }
+
+  /* ── 화면 전환 ── */
+  .screen {
+    display: none;
+    padding-bottom: calc(var(--nav-h) + 24px + env(safe-area-inset-bottom, 0px));
+  }
+  .screen.active { display: block; animation: screenIn .28s ease both; }
+  @keyframes screenIn {
+    0% { opacity: 0; transform: translateX(24px); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+
+  .pad { padding: 0 18px; }
+
+  /* ── 상단바 (서브 화면) ── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 12px;
+    background: rgba(250,248,245,.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: none;
+    color: var(--text);
+  }
+  .back-btn:hover { background: var(--stone-light); }
+  .back-btn svg { width: 22px; height: 22px; }
+  .topbar .title { font-size: 1rem; font-weight: 700; }
+  .section-title { font-size: 1.05rem; font-weight: 700; margin: 22px 0 12px; }
+  .section-title small { font-weight: 500; color: var(--muted); font-size: .8rem; margin-left: 6px; }
+
+  /* ── 홈 히어로 ── */
+  .hero {
+    background: linear-gradient(160deg, var(--sea) 0%, var(--sea-deep) 100%);
+    color: #fff;
+    padding: 48px 24px 58px;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero .badge {
+    display: block;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    opacity: .65;
+    margin-bottom: 12px;
+  }
+  .hero h1 { font-size: 2.1rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
+  .hero h1 .dot { color: var(--tangerine); }
+  .hero p { opacity: .75; font-size: .9rem; font-weight: 300; }
+  .hero .deco { position: absolute; font-size: 1.5rem; opacity: .35; user-select: none; pointer-events: none; }
+  .nick-chip {
+    position: absolute;
+    top: 18px; right: 18px;
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.25);
+    color: #fff;
+    border-radius: 16px;
+    padding: 5px 12px;
+    font-size: .76rem; font-weight: 600;
+    backdrop-filter: blur(4px);
+  }
+  .nick-chip svg { width: 13px; height: 13px; opacity: .8; }
+  .nick-chip:hover { background: rgba(255,255,255,.24); }
+
+  /* ── 별명 모달 ── */
+  .modal.center { align-items: center; padding: 24px; }
+  .modal.center .modal-box { border-radius: 20px; max-width: 330px; text-align: center; }
+  .nick-desc { font-size: .86rem; color: var(--muted); line-height: 1.55; margin: -8px 0 16px; }
+  .nick-box input { text-align: center; }
+  .nick-start { width: 100%; padding: 13px; border-radius: 10px; font-size: .95rem; font-weight: 700; }
+
+  /* ── 통계 ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: -28px 18px 0;
+    position: relative;
+    z-index: 1;
+  }
+  .stat {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 6px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.05);
+  }
+  .stat .num { font-size: 1.35rem; font-weight: 800; color: var(--sea); }
+  .stat .label { font-size: .7rem; color: var(--muted); }
+
+  /* ── 지도 ── */
+  .map-card {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 12px 14px 2px;
+    margin: 16px 18px 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,.07);
+  }
+  .map-reset {
+    position: absolute;
+    top: 20px; right: 22px;
+    z-index: 2;
+    background: rgba(255,255,255,.92);
+    color: var(--sea-deep);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 5px 12px;
+    font-size: .76rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  }
+  .map-reset:hover { background: #fff; }
+  .map-card svg { width: 100%; height: auto; display: block; }
+  .region-spot { cursor: pointer; }
+  .region-spot .dot {
+    fill: var(--sea);
+    stroke: #fff; stroke-width: 2.5;
+    filter: drop-shadow(0 3px 6px rgba(29,90,117,.35));
+    transition: .2s;
+  }
+  .region-spot:hover .dot, .region-spot.on .dot {
+    fill: var(--tangerine);
+    filter: drop-shadow(0 4px 10px rgba(242,140,40,.5));
+  }
+  .region-spot .ring { fill: none; stroke: var(--tangerine); stroke-width: 2; opacity: 0; }
+  .region-spot.on .ring { animation: ripple 1.8s ease-out infinite; }
+  @keyframes ripple { 0% { opacity: .7; transform: scale(1); } 100% { opacity: 0; transform: scale(1.9); } }
+  .region-spot text { font-family: 'Pretendard', sans-serif; pointer-events: none; }
+  .region-spot .count { fill: #fff; font-size: 11px; font-weight: 800; text-anchor: middle; }
+  .region-spot .label { fill: var(--sea-deep); font-size: 11px; font-weight: 700; text-anchor: middle; }
+  .region-spot .label-bg { fill: #fff; opacity: .92; filter: drop-shadow(0 1px 3px rgba(0,0,0,.12)); }
+  .map-hint { text-align: center; font-size: .76rem; color: var(--muted); padding: 6px 0 10px; }
+
+  /* ── 탐색 화면: 지도·검색·필터는 고정, 카드 목록만 스크롤 ── */
+  #screen-map.active {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - var(--nav-h) - env(safe-area-inset-bottom, 0px));
+    height: calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+  #screen-map .topbar,
+  #screen-map .map-card { flex-shrink: 0; }
+  #screen-map .pad {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  #screen-map .pad > :not(#mapList) { flex-shrink: 0; }
+  #mapList {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    padding-bottom: 24px;
+  }
+  #mapList::-webkit-scrollbar { display: none; }
+
+  /* ── 필터 칩 ── */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 16px; }
+  .chip {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 7px 15px;
+    font-size: .84rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: .15s;
+  }
+  .chip:hover { border-color: var(--sea); }
+  .chip.on { background: var(--sea); color: #fff; border-color: var(--sea); }
+
+  /* ── 기록 카드 ── */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid.single { grid-template-columns: 1fr; }
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: .2s;
+  }
+  .card { cursor: pointer; }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.08); }
+  .card .thumb {
+    height: 110px;
+    background: var(--sea-light) center/cover no-repeat;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .thumb-cat {
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--sea-deep);
+    opacity: .5;
+  }
+  .card .body { padding: 11px 13px 13px; }
+  .card .place { font-weight: 700; font-size: .96rem; margin-bottom: 3px; }
+  .card .meta { font-size: .72rem; color: var(--muted); margin-bottom: 5px; }
+  .card .with { font-size: .78rem; color: var(--sea-deep); margin-bottom: 6px; font-weight: 500; }
+  .card .note {
+    font-size: .82rem; color: #555;
+    border-left: 3px solid var(--sea-light);
+    padding-left: 9px;
+  }
+  .card .stars { color: var(--tangerine); font-size: .78rem; letter-spacing: 1px; }
+  .tag {
+    display: inline-block;
+    background: var(--stone-light);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: .68rem;
+    color: var(--stone);
+    margin-right: 3px;
+  }
+
+  .msg { text-align: center; padding: 50px 20px; color: var(--muted); font-size: .9rem; }
+
+  /* ── 홈: 바로가기 ── */
+  .quick {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .quick button {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    text-align: left;
+    font-size: .92rem;
+    font-weight: 700;
+    color: var(--text);
+    transition: .15s;
+  }
+  .quick button:hover { border-color: var(--sea); transform: translateY(-1px); }
+  .quick button span {
+    display: block;
+    font-size: .74rem;
+    color: var(--muted);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  /* ── 홈: 최근 추억 가로 스크롤 ── */
+  .hscroll {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin: 0 -18px;
+    padding: 0 28px 10px;
+    scrollbar-width: none;
+  }
+  .hscroll .card { scroll-margin-left: 28px; }
+  .hscroll::-webkit-scrollbar { display: none; }
+  .hscroll .card {
+    min-width: 64%;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+  .hscroll .thumb { height: 140px; }
+
+  /* ── 홈: 빈 갈피 채우기 ── */
+  .empty-regions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .empty-pill {
+    background: none;
+    border: 1.5px dashed #cfc9c1;
+    color: var(--muted);
+    border-radius: 18px;
+    padding: 8px 16px;
+    font-size: .84rem;
+    font-weight: 600;
+  }
+  .empty-pill:hover { border-color: var(--sea); color: var(--sea); }
+  .empty-done {
+    text-align: center;
+    padding: 14px;
+    background: var(--sea-light);
+    border-radius: 14px;
+    color: var(--sea-deep);
+    font-size: .88rem;
+    font-weight: 600;
+  }
+
+  /* ── 나의 제주 리포트 ── */
+  .insights { display: flex; flex-direction: column; gap: 10px; }
+  .insight {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 13px 16px;
+    display: flex; align-items: center; gap: 13px;
+  }
+  .insight .ico {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: var(--sea-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem; flex-shrink: 0;
+  }
+  .insight .txt .k { font-size: .74rem; color: var(--muted); }
+  .insight .txt .v { font-size: .95rem; font-weight: 700; }
+  .insight .txt .v em { font-style: normal; color: var(--sea); }
+
+  /* ── 회상 화면 ── */
+  .recall-desc {
+    text-align: center;
+    color: var(--muted);
+    font-size: .88rem;
+    margin-bottom: 18px;
+  }
+  .recall-ago {
+    text-align: center;
+    font-size: .82rem;
+    font-weight: 700;
+    color: var(--tangerine);
+    margin-bottom: 10px;
+  }
+  #recallCard .thumb { height: 170px; }
+  #recallCard .place { font-size: 1.05rem; }
+  #recallCard .body { padding: 13px 15px 15px; }
+  #recallCard .grid { max-width: 300px; margin: 0 auto; }
+  .recall-idle {
+    width: 130px; height: 130px;
+    margin: 84px auto 56px;
+    border-radius: 50%;
+    background: var(--sea-light);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .recall-idle svg { width: 46px; height: 46px; color: var(--sea); }
+  .recall-anim { animation: recallIn 1s cubic-bezier(.16, 1, .3, 1) both; }
+  @keyframes recallIn {
+    0% { opacity: 0; transform: translateY(56px) scale(.95); filter: blur(4px); }
+    55% { opacity: 1; }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+  .recall-btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-top: 18px;
+  }
+
+  /* ── 리포트 범위 전환 ── */
+  .seg {
+    display: flex;
+    gap: 4px;
+    background: var(--stone-light);
+    border-radius: 12px;
+    padding: 4px;
+  }
+  .seg-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 9px;
+    font-size: .86rem;
+    font-weight: 600;
+    color: var(--muted);
+    background: none;
+  }
+  .seg-btn.on {
+    background: #fff;
+    color: var(--sea-deep);
+    box-shadow: 0 1px 4px rgba(0,0,0,.1);
+  }
+
+  /* ── 제주 정복률 ── */
+  .conquest {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .conquest-head {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: .9rem; font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .conquest-pct { color: var(--sea); font-size: 1.05rem; font-weight: 800; }
+  .bar {
+    height: 10px; border-radius: 5px;
+    background: var(--stone-light);
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; width: 0;
+    border-radius: 5px;
+    background: var(--sea);
+    transition: width .8s cubic-bezier(.2, .8, .3, 1);
+  }
+  .conquest-regions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .region-pill {
+    font-size: .74rem; font-weight: 600;
+    border-radius: 14px;
+    padding: 4px 11px;
+    background: var(--stone-light);
+    color: var(--muted);
+  }
+  .region-pill.done { background: var(--sea-light); color: var(--sea-deep); }
+
+  /* ── 카테고리 분포 ── */
+  .catbars {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .catbar .cb-head {
+    display: flex; justify-content: space-between;
+    font-size: .8rem; font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .catbar .cb-head .n { color: var(--muted); font-weight: 500; }
+
+  /* ── 검색창 ── */
+  .searchbox {
+    display: flex; align-items: center; gap: 8px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-top: 14px;
+  }
+  .searchbox input {
+    flex: 1; border: none; outline: none;
+    font-family: inherit; font-size: .92rem;
+    background: none;
+  }
+  .searchbox:focus-within { outline: 2px solid var(--sea); border-color: transparent; }
+
+  /* ── 하단 탭바 ── */
+  nav.tabbar {
+    position: fixed;
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: stretch;
+    z-index: 30;
+  }
+  .tab-btn {
+    flex: 1;
+    background: none;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px;
+    font-size: .68rem; font-weight: 600;
+    color: var(--muted);
+  }
+  .tab-btn svg { width: 22px; height: 22px; transition: transform .2s; }
+  .tab-btn.on { color: var(--sea); font-weight: 700; }
+  .tab-btn.on svg { transform: translateY(-1px) scale(1.08); }
+  .tab-home {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    background: none;
+  }
+  .home-circle {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: var(--sea);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 16px rgba(43,122,155,.45);
+    margin-top: -20px;
+    border: 3px solid var(--bg);
+    transition: .2s;
+  }
+  .home-circle svg { width: 22px; height: 22px; }
+  .tab-home:hover .home-circle { transform: scale(1.06); }
+
+  /* ── 모달 ── */
+  button { font-family: inherit; cursor: pointer; border: none; transition: .15s; }
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    display: none; align-items: flex-end; justify-content: center;
+    z-index: 50;
+  }
+  .modal.open { display: flex; }
+  .modal-box {
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    padding: 22px 22px 28px;
+    width: 100%; max-width: 480px;
+    max-height: 88vh; overflow-y: auto;
+    animation: sheetUp .3s ease both;
+  }
+  @keyframes sheetUp { 0% { transform: translateY(60px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+  .modal-box h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 4px; }
+  .field input, .field select, .field textarea {
+    width: 100%; border: 1px solid var(--line); border-radius: 10px;
+    padding: 10px 12px; font-family: inherit; font-size: .92rem;
+  }
+  .field textarea { resize: vertical; min-height: 64px; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--sea); border-color: transparent; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .photo-row { display: flex; align-items: center; gap: 12px; }
+  .photo-pick {
+    display: flex; align-items: center; gap: 7px;
+    background: var(--stone-light);
+    color: var(--stone);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: .88rem; font-weight: 600;
+  }
+  .photo-pick svg { width: 18px; height: 18px; }
+  .photo-pick:hover { background: var(--sea-light); color: var(--sea-deep); }
+  .photo-preview {
+    width: 56px; height: 56px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+  .photo-remove {
+    position: absolute;
+    top: -7px; right: -7px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--stone);
+    color: #fff;
+    font-size: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-actions { display: flex; gap: 8px; margin-top: 18px; }
+  .modal-actions button { flex: 1; padding: 13px; border-radius: 10px; font-size: .92rem; font-weight: 600; }
+  .btn-primary { background: var(--sea); color: #fff; }
+  .btn-primary:hover { background: var(--sea-deep); }
+  .btn-ghost { background: var(--stone-light); color: var(--stone); }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .modal-head h2 { margin-bottom: 0; }
+  .del-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: none;
+    color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .del-btn svg { width: 20px; height: 20px; }
+  .del-btn:hover { background: var(--stone-light); color: var(--stone); }
+  .del-btn:disabled { opacity: .4; cursor: default; }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-title">제주갈피<span class="dot">.</span></div>
+  <div class="splash-sub">나만의 제주 추억 기록장</div>
+  <svg class="splash-wave" viewBox="0 0 520 90" preserveAspectRatio="none">
+    <path d="M0 45 Q 65 15 130 45 T 260 45 T 390 45 T 520 45 V 90 H 0 Z" fill="#fff"/>
+  </svg>
+</div>
+
+<div class="app">
+
+  <!-- ═══ 홈 화면 ═══ -->
+  <section class="screen active" id="screen-home">
+    <div class="hero">
+      <button class="nick-chip" id="nickChip" type="button" title="별명 바꾸기" style="display:none"></button>
+      <div class="badge">나만의 제주 추억 기록장</div>
+      <h1>제주갈피<span class="dot">.</span></h1>
+      <p>제주에서의 순간들을, 한 장씩 끼워두는 곳</p>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="pad">
+      <div class="quick">
+        <button type="button" onclick="go('map')">추억 탐색<span>지도에서 찾아보기</span></button>
+        <button type="button" onclick="go('recall')">추억 뽑기<span>지난 기억 꺼내보기</span></button>
+      </div>
+
+      <div class="section-title">최근 추억 <small>옆으로 넘겨보세요</small></div>
+      <div id="recentList"></div>
+
+      <div class="section-title">빈 갈피 채우기 <small>아직 기록이 없는 지역</small></div>
+      <div id="emptyRegions"></div>
+    </div>
+  </section>
+
+  <!-- ═══ 탐색 화면 (지도 + 검색 + 필터 + 목록) ═══ -->
+  <section class="screen" id="screen-map">
+    <div class="topbar">
+      <button class="back-btn" onclick="go('home')" title="돌아가기">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+      </button>
+      <span class="title">추억 탐색</span>
+    </div>
+    <div class="map-card" style="margin-top:12px">
+      <button class="map-reset" id="mapReset" type="button" style="display:none">전체 보기</button>
+      <svg viewBox="0 30 520 212" id="jejuMap">
+        <defs>
+          <filter id="islandShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#1d5a75" flood-opacity="0.18"/>
+          </filter>
+        </defs>
+        <rect x="0" y="30" width="520" height="212" rx="18" fill="#d9ecf4"/>
+        <g stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity=".5" fill="none">
+          <path d="M 40 40 q 10 -6 20 0 q 10 6 20 0"/>
+          <path d="M 440 220 q 10 -6 20 0 q 10 6 20 0"/>
+          <path d="M 60 225 q 10 -6 20 0 q 10 6 20 0"/>
+          <path d="M 460 55 q 10 -6 20 0 q 10 6 20 0"/>
+        </g>
+        <path d="M 60 150 C 55 120, 90 95, 130 88 C 170 80, 210 68, 260 65 C 315 62, 370 72, 415 92 C 450 108, 470 130, 465 152 C 458 180, 420 196, 375 202 C 330 208, 285 214, 240 212 C 190 210, 140 205, 105 190 C 80 179, 64 168, 60 150 Z"
+              fill="#c2e2b0" filter="url(#islandShadow)"/>
+        <path d="M 228 155 Q 262 100 296 155 Z" fill="#6ea75d"/>
+        <path d="M 250 128 Q 262 110 274 128 Q 262 136 250 128 Z" fill="#fff" opacity=".9"/>
+        <g id="spots"></g>
+      </svg>
+      <div class="map-hint" id="mapHint">지역을 눌러보세요</div>
+    </div>
+    <div class="pad">
+      <div class="searchbox">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:18px;height:18px;color:var(--muted);flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+        <input id="searchInput" placeholder="장소, 한줄평, 함께한 사람 검색" autocomplete="off">
+      </div>
+      <div class="filters" id="filters"></div>
+      <div class="section-title" id="mapListTitle" style="margin-top:4px">전체 지역의 추억</div>
+      <div id="mapList"></div>
+    </div>
+  </section>
+
+  <!-- ═══ 회상 화면 (랜덤 추억 뽑기) ═══ -->
+  <section class="screen" id="screen-recall">
+    <div class="topbar">
+      <button class="back-btn" onclick="go('home')" title="돌아가기">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+      </button>
+      <span class="title">추억 회상</span>
+    </div>
+    <div class="pad recall-wrap" style="padding-top:16px">
+      <p class="recall-desc">지난 추억 하나를 다시 꺼내볼까요?</p>
+      <div id="recallCard"></div>
+      <button class="btn-primary recall-btn" id="recallBtn">추억 뽑기</button>
+    </div>
+  </section>
+
+  <!-- ═══ 리포트 화면 ═══ -->
+  <section class="screen" id="screen-report">
+    <div class="topbar">
+      <button class="back-btn" onclick="go('home')" title="돌아가기">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+      </button>
+      <span class="title" id="reportTitle">나의 제주 리포트</span>
+    </div>
+    <div class="pad" style="padding-top:16px">
+      <div class="seg" id="reportSeg">
+        <button type="button" class="seg-btn on" data-scope="month">이번 달</button>
+        <button type="button" class="seg-btn" data-scope="year">이번 해</button>
+      </div>
+
+      <div class="conquest" style="margin-top:14px">
+        <div class="conquest-head">
+          <span>제주 정복률</span>
+          <span class="conquest-pct" id="conquestPct">0%</span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="conquestBar"></div></div>
+        <div class="conquest-regions" id="conquestRegions"></div>
+      </div>
+
+      <div class="section-title">나의 취향</div>
+      <div class="insights" id="insights"></div>
+
+      <div class="section-title">카테고리 분포</div>
+      <div class="catbars" id="catBars"></div>
+    </div>
+  </section>
+
+  <!-- ═══ 하단 탭바 ═══ -->
+  <nav class="tabbar">
+    <button class="tab-btn" id="fab" title="추억 남기기">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
+      기록
+    </button>
+    <button class="tab-home on" data-screen="home" title="홈">
+      <span class="home-circle"><svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/></svg></span>
+    </button>
+    <button class="tab-btn" data-screen="report">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/></svg>
+      리포트
+    </button>
+  </nav>
+
+</div>
+
+<!-- ═══ 별명 입력 ═══ -->
+<div class="modal center" id="nickModal">
+  <div class="modal-box nick-box">
+    <h2>별명으로 시작하기</h2>
+    <p class="nick-desc">회원가입 없이 별명으로 내 기록을 구분해요.<br>같은 별명으로 접속하면 언제든<br>내 추억을 다시 볼 수 있어요.</p>
+    <div class="field">
+      <input id="nickInput" placeholder="예: 귤도둑" maxlength="12" autocomplete="off">
+    </div>
+    <button type="button" class="btn-primary nick-start" id="nickStart">시작하기</button>
+  </div>
+</div>
+
+<!-- ═══ 추억 남기기 (바텀시트) ═══ -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="modalTitle">추억 남기기</h2>
+      <button type="button" class="del-btn" id="deleteBtn" style="display:none" title="이 추억 삭제">
+        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+      </button>
+    </div>
+    <form id="form">
+      <div class="row2">
+        <div class="field">
+          <label>방문일</label>
+          <input type="date" name="방문일" id="dateField" required>
+        </div>
+        <div class="field">
+          <label>별점</label>
+          <select name="별점">
+            <option value="5">★★★★★</option>
+            <option value="4">★★★★</option>
+            <option value="3">★★★</option>
+            <option value="2">★★</option>
+            <option value="1">★</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>장소명</label>
+        <input name="장소명" required placeholder="카페 델문도">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>카테고리</label>
+          <select name="카테고리">
+            <option>카페</option><option>맛집</option><option>명소</option><option>액티비티</option><option>기타</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>지역</label>
+          <select name="지역">
+            <option>제주시</option><option>애월</option><option>한림</option>
+            <option>서귀포</option><option>성산</option><option>조천</option><option>구좌</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>함께한 사람 <span style="opacity:.6">(선택)</span></label>
+        <input name="동행자" placeholder="함께 간 사람이 있다면 적어주세요">
+      </div>
+      <div class="field">
+        <label>남기고 싶은 한마디 <span style="opacity:.6">(선택)</span></label>
+        <textarea name="한줄평" placeholder="그날의 기분, 기억하고 싶은 순간을 자유롭게 남겨보세요"></textarea>
+      </div>
+      <div class="field">
+        <label>사진 <span style="opacity:.6">(선택)</span></label>
+        <input type="hidden" name="사진" id="photoData">
+        <div class="photo-row">
+          <button type="button" class="photo-pick" id="photoPick">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/></svg>
+            사진 선택
+          </button>
+          <div class="photo-preview" id="photoPreview" style="display:none">
+            <button type="button" class="photo-remove" id="photoRemove" title="사진 지우기">✕</button>
+          </div>
+        </div>
+        <input type="file" id="photoFile" accept="image/*" style="display:none">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="cancelBtn">취소</button>
+        <button type="submit" class="btn-primary" id="submitBtn">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbzgxC9DBAWkcIIO1cxn4C48MBvcSDtKNgHSe1IeAxNlz--GXJoewM4cQIWRPNMh4oW8mQ/exec';
+
+// 지도 위 지역 스팟 좌표 (viewBox 520x260 기준)
+const REGIONS = [
+  { name: '제주시', x: 250, y: 88 },
+  { name: '조천',   x: 320, y: 85 },
+  { name: '구좌',   x: 395, y: 98 },
+  { name: '성산',   x: 435, y: 140 },
+  { name: '서귀포', x: 280, y: 185 },
+  { name: '한림',   x: 120, y: 125 },
+  { name: '애월',   x: 175, y: 100 },
+];
+
+let allRecords = [];         // 시트 전체 (모든 사람의 기록)
+let records = [];            // 내 별명의 기록만
+let currentCat = '전체';     // 기록 화면 필터
+let currentRegion = '';      // 지도 화면 필터
+let nickname = localStorage.getItem('jeju_nickname') || '';
+
+const $ = id => document.getElementById(id);
+
+// 시트가 날짜를 "2026-07-04T15:00:00.000Z" 형태로 줄 때도 한국 기준 yyyy-MM-dd로 표시
+function fmtDate(v) {
+  const s = String(v);
+  if (!s.includes('T')) return s;
+  const d = new Date(s);
+  if (isNaN(d)) return s;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function sortByDate(rows) {
+  return [...rows].sort((a, b) => fmtDate(b.방문일).localeCompare(fmtDate(a.방문일)));
+}
+
+/* ── 데이터 ── */
+async function load() {
+  try {
+    const res = await fetch(API_URL);
+    const json = await res.json();
+    // _i = 시트에서의 행 순서. 수정/삭제 시 어느 행인지 알려주는 용도 (필터 전에 매겨야 함)
+    allRecords = (json.data || []).map((r, i) => ({ ...r, _i: i }));
+    applyNickFilter();
+    renderAll();
+  } catch (e) {
+    $('recentList').innerHTML = `<div class="msg">데이터를 불러오지 못했어요.<br><small>${e}</small></div>`;
+  }
+}
+
+/* ── 별명 ── */
+function applyNickFilter() {
+  records = nickname
+    ? allRecords.filter(r => String(r.별명 || '').trim() === nickname)
+    : [];
+}
+
+function renderNickChip() {
+  $('reportTitle').textContent = nickname ? `${nickname}님의 제주 리포트` : '나의 제주 리포트';
+  const chip = $('nickChip');
+  chip.style.display = nickname ? '' : 'none';
+  chip.innerHTML = nickname
+    ? `${nickname}<svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"/></svg>`
+    : '';
+}
+
+function openNickModal() {
+  $('nickInput').value = nickname;
+  $('nickModal').classList.add('open');
+  $('nickInput').focus();
+}
+
+$('nickStart').addEventListener('click', () => {
+  const v = $('nickInput').value.trim();
+  if (!v) { $('nickInput').focus(); return; }
+  nickname = v;
+  localStorage.setItem('jeju_nickname', v);
+  $('nickModal').classList.remove('open');
+  applyNickFilter();
+  renderAll();
+});
+$('nickInput').addEventListener('keydown', e => { if (e.key === 'Enter') $('nickStart').click(); });
+$('nickChip').addEventListener('click', openNickModal);
+// 별명이 이미 있을 때만 바깥 클릭으로 닫기 허용 (첫 설정은 필수)
+$('nickModal').addEventListener('click', e => {
+  if (e.target === $('nickModal') && nickname) $('nickModal').classList.remove('open');
+});
+
+function renderAll() {
+  renderNickChip();
+  renderStats();
+  renderInsights();
+  renderRecent();
+  renderEmptyRegions();
+  renderMap();
+  renderMapList();
+  renderFilters();
+  renderRecallIdle();
+  renderReport();
+}
+
+/* ── 리포트 화면 ── */
+let reportScope = 'month';   // 'month' = 이번 달, 'year' = 이번 해
+
+function reportRecords() {
+  const now = new Date();
+  const key = reportScope === 'year'
+    ? `${now.getFullYear()}-`
+    : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  return records.filter(r => fmtDate(r.방문일).startsWith(key));
+}
+
+function renderReport() {
+  const rows = reportRecords();
+
+  // 지역 정복률
+  const visited = new Set(rows.map(r => r.지역));
+  const done = REGIONS.filter(rg => visited.has(rg.name));
+  const pct = Math.round(done.length / REGIONS.length * 100);
+  $('conquestPct').textContent = `${pct}%`;
+  $('conquestBar').style.width = `${pct}%`;
+  $('conquestRegions').innerHTML = REGIONS.map(rg =>
+    `<span class="region-pill ${visited.has(rg.name) ? 'done' : ''}">${visited.has(rg.name) ? '✓ ' : ''}${rg.name}</span>`
+  ).join('');
+
+  // 카테고리 분포
+  const cats = ['카페', '맛집', '명소', '액티비티', '기타'];
+  const max = Math.max(1, ...cats.map(c => rows.filter(r => r.카테고리 === c).length));
+  $('catBars').innerHTML = cats.map(c => {
+    const n = rows.filter(r => r.카테고리 === c).length;
+    return `
+      <div class="catbar">
+        <div class="cb-head"><span>${c}</span><span class="n">${n}개</span></div>
+        <div class="bar"><div class="bar-fill" style="width:${n / max * 100}%"></div></div>
+      </div>`;
+  }).join('');
+}
+
+$('reportSeg').addEventListener('click', e => {
+  const btn = e.target.closest('.seg-btn');
+  if (!btn || btn.dataset.scope === reportScope) return;
+  reportScope = btn.dataset.scope;
+  document.querySelectorAll('#reportSeg .seg-btn').forEach(b =>
+    b.classList.toggle('on', b.dataset.scope === reportScope));
+  renderReport();
+  renderInsights();
+});
+
+/* ── 카드 HTML ── */
+function cardHTML(r) {
+  const thumb = r.사진
+    ? `<div class="thumb" style="background-image:url('${r.사진}')"></div>`
+    : `<div class="thumb"><span class="thumb-cat">${r.카테고리}</span></div>`;
+  const stars = '★'.repeat(Number(r.별점) || 0);
+  // "혼자", "혼자서" 같은 동행자는 "함께 ·"를 붙이면 어색하니 그대로 표시
+  const withText = r.동행자
+    ? (/혼자/.test(r.동행자) ? r.동행자 : `함께 · ${r.동행자}`)
+    : '';
+  return `
+    <div class="card" data-idx="${r._i}">
+      ${thumb}
+      <div class="body">
+        <div class="place">${r.장소명}</div>
+        <div class="meta">
+          <span class="tag">${r.지역}</span><span class="tag">${r.카테고리}</span><br>
+          ${fmtDate(r.방문일)} · <span class="stars">${stars}</span>
+        </div>
+        ${withText ? `<div class="with">${withText}</div>` : ''}
+        ${r.한줄평 ? `<div class="note">${r.한줄평}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function gridHTML(rows, single) {
+  if (!rows.length) return `<div class="msg">아직 추억이 없어요.<br>아래 + 버튼으로 첫 추억을 남겨보세요.</div>`;
+  return `<div class="grid ${single ? 'single' : ''}">` + rows.map(cardHTML).join('') + '</div>';
+}
+
+/* ── 홈 ── */
+function renderStats() {
+  const now = new Date();
+  const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const monthCount = records.filter(r => fmtDate(r.방문일).startsWith(thisMonth)).length;
+  $('stats').innerHTML = `
+    <div class="stat"><div class="num">${records.length}</div><div class="label">전체 추억</div></div>
+    <div class="stat"><div class="num">${monthCount}</div><div class="label">이번 달 기록</div></div>
+    <div class="stat"><div class="num">${new Set(records.map(r => r.지역)).size}</div><div class="label">다녀온 지역</div></div>
+  `;
+}
+
+function renderEmptyRegions() {
+  const visited = new Set(records.map(r => r.지역));
+  const empty = REGIONS.filter(rg => !visited.has(rg.name));
+  if (!empty.length) {
+    $('emptyRegions').innerHTML = `<div class="empty-done">일곱 지역의 갈피를 모두 채웠어요 🎉</div>`;
+    return;
+  }
+  $('emptyRegions').innerHTML = '<div class="empty-regions">' +
+    empty.map(rg => `<button type="button" class="empty-pill" data-region="${rg.name}">+ ${rg.name}</button>`).join('') +
+    '</div>';
+}
+
+function renderRecent() {
+  const rows = sortByDate(records).slice(0, 5);
+  if (!rows.length) {
+    $('recentList').innerHTML = `<div class="msg">아직 추억이 없어요.<br>기록 버튼으로 첫 추억을 남겨보세요.</div>`;
+    return;
+  }
+  $('recentList').innerHTML = '<div class="hscroll">' + rows.map(cardHTML).join('') + '</div>';
+}
+
+/* ── 나의 제주 리포트 ── */
+function topOf(list) {
+  const counts = {};
+  list.forEach(v => { if (v) counts[v] = (counts[v] || 0) + 1; });
+  const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  return best || null;  // [이름, 횟수]
+}
+
+function renderInsights() {
+  const rows = reportRecords();
+  if (!rows.length) {
+    $('insights').innerHTML = '<div class="msg" style="padding:20px">이 기간의 기록이 아직 없어요.</div>';
+    return;
+  }
+
+  const withList = rows.map(r => String(r.동행자 || '').trim()).filter(Boolean);
+  const topWith = topOf(withList);
+  const now = new Date();
+  const isMonth = reportScope === 'month';
+
+  const items = [];
+  if (topWith) {
+    if (topWith[1] >= 2) {
+      items.push({ k: '가장 많이 함께한 사람', v: `<em>${topWith[0]}</em> · ${topWith[1]}번의 추억` });
+    } else {
+      // 모두 1번씩이면 최다를 뽑는 대신 함께한 사람 전부 표시
+      const uniq = [...new Set(withList)];
+      items.push({ k: '가장 많이 함께한 사람', v: uniq.map(n => `<em>${n}</em>`).join(', ') + ' · 1번의 추억' });
+    }
+  }
+  items.push(isMonth
+    ? { k: `${now.getMonth() + 1}월의 추억`, v: `이번 달 <em>${rows.length}개</em>의 기록을 남겼어요` }
+    : { k: '올해의 추억', v: `이번 해 <em>${rows.length}개</em>의 기록을 남겼어요` });
+
+  $('insights').innerHTML = items.map(i => `
+    <div class="insight">
+      <div class="txt"><div class="k">${i.k}</div><div class="v">${i.v}</div></div>
+    </div>`).join('');
+}
+
+/* ── 지도 화면 ── */
+function renderMap() {
+  const counts = {};
+  records.forEach(r => { counts[r.지역] = (counts[r.지역] || 0) + 1; });
+
+  $('spots').innerHTML = REGIONS.map(rg => {
+    const n = counts[rg.name] || 0;
+    const rMax = 16, rMin = 9;
+    const radius = n ? Math.min(rMax, rMin + n * 2) : rMin;
+    const on = currentRegion === rg.name;
+    const pillW = rg.name.length * 12 + 14;
+    const pillY = rg.y + radius + 7;
+    return `
+      <g class="region-spot ${on ? 'on' : ''}" data-region="${rg.name}">
+        <circle class="ring" cx="${rg.x}" cy="${rg.y}" r="${radius}" style="transform-origin:${rg.x}px ${rg.y}px"/>
+        <circle class="dot" cx="${rg.x}" cy="${rg.y}" r="${radius}" opacity="${n ? 1 : .4}"/>
+        <text class="count" x="${rg.x}" y="${rg.y + 4}">${n || ''}</text>
+        <rect class="label-bg" x="${rg.x - pillW / 2}" y="${pillY}" width="${pillW}" height="18" rx="9"/>
+        <text class="label" x="${rg.x}" y="${pillY + 13}">${rg.name}</text>
+      </g>`;
+  }).join('');
+
+  $('mapReset').style.display = currentRegion ? '' : 'none';
+}
+
+// 지역(지도) + 카테고리 칩 + 검색어가 모두 하나의 목록에 적용됨
+function renderMapList() {
+  const q = ($('searchInput').value || '').trim().toLowerCase();
+  let rows = records;
+  if (currentRegion) rows = rows.filter(r => r.지역 === currentRegion);
+  if (currentCat !== '전체') rows = rows.filter(r => r.카테고리 === currentCat);
+  if (q) {
+    rows = rows.filter(r =>
+      [r.장소명, r.한줄평, r.동행자, r.지역].some(f => String(f || '').toLowerCase().includes(q)));
+  }
+  rows = sortByDate(rows);
+
+  $('mapListTitle').innerHTML =
+    `<span><svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:18px;height:18px;color:var(--sea);vertical-align:-3px;margin-right:4px"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>${currentRegion || '전체 지역'}</span>`;
+  if (!rows.length && (q || currentCat !== '전체')) {
+    $('mapList').innerHTML = `<div class="msg">조건에 맞는 추억을 찾지 못했어요.</div>`;
+    return;
+  }
+  $('mapList').innerHTML = gridHTML(rows);
+}
+
+function renderFilters() {
+  const cats = ['전체', '카페', '맛집', '명소', '액티비티', '기타'];
+  $('filters').innerHTML = cats.map(c =>
+    `<button class="chip ${c === currentCat ? 'on' : ''}" data-cat="${c}">${c}</button>`
+  ).join('');
+}
+
+/* ── 회상 화면 ── */
+function daysAgo(v) {
+  const d = new Date(fmtDate(v));
+  if (isNaN(d)) return '';
+  const diff = Math.floor((new Date() - d) / 86400000);
+  if (diff <= 0) return '오늘의 추억';
+  if (diff === 1) return '어제의 추억';
+  return `${diff}일 전의 추억`;
+}
+
+function renderRecallIdle() {
+  $('recallCard').innerHTML = `
+    <div class="recall-idle">
+      <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9.5 16.5l-.313-.596a3.75 3.75 0 0 0-1.591-1.591L7 14l.596-.313a3.75 3.75 0 0 0 1.591-1.591L9.5 11.5l.313.596a3.75 3.75 0 0 0 1.591 1.591L12 14l-.596.313a3.75 3.75 0 0 0-1.591 1.591ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"/></svg>
+    </div>`;
+}
+
+function renderRecall() {
+  if (!records.length) {
+    $('recallCard').innerHTML = `<div class="msg">아직 꺼내볼 추억이 없어요.<br>+ 버튼으로 첫 추억을 남겨보세요.</div>`;
+    return;
+  }
+  const r = records[Math.floor(Math.random() * records.length)];
+  $('recallCard').innerHTML = `
+    <div class="recall-ago">${daysAgo(r.방문일)}</div>
+    <div class="grid single recall-anim">${cardHTML(r)}</div>`;
+}
+
+/* ── 화면 전환 ── */
+function go(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $('screen-' + name).classList.add('active');
+  document.querySelectorAll('.tabbar [data-screen]').forEach(b =>
+    b.classList.toggle('on', b.dataset.screen === name));
+  if (name === 'recall') renderRecallIdle();
+  window.scrollTo({ top: 0 });
+}
+
+document.querySelectorAll('.tabbar [data-screen]').forEach(btn =>
+  btn.addEventListener('click', () => go(btn.dataset.screen)));
+
+/* ── 이벤트 ── */
+$('jejuMap').addEventListener('click', e => {
+  const spot = e.target.closest('.region-spot');
+  if (!spot) return;
+  const name = spot.dataset.region;
+  currentRegion = currentRegion === name ? '' : name;
+  renderMap();
+  renderMapList();
+});
+
+$('searchInput').addEventListener('input', renderMapList);
+
+// 빈 갈피 지역 클릭 → 탐색 화면에서 그 지역 선택 상태로 이동
+$('emptyRegions').addEventListener('click', e => {
+  const pill = e.target.closest('.empty-pill');
+  if (!pill) return;
+  currentRegion = pill.dataset.region;
+  renderMap();
+  renderMapList();
+  go('map');
+});
+
+$('mapReset').addEventListener('click', () => {
+  currentRegion = '';
+  renderMap();
+  renderMapList();
+});
+
+$('filters').addEventListener('click', e => {
+  const btn = e.target.closest('.chip');
+  if (!btn) return;
+  currentCat = btn.dataset.cat;
+  renderFilters();
+  renderMapList();
+});
+
+$('recallBtn').addEventListener('click', renderRecall);
+
+let editIdx = null;   // 수정 중인 기록의 시트 행 순서(_i). null이면 새 기록
+
+/* ── 사진: 줄여서 base64로 시트에 저장 ── */
+// 시트 셀 한도(5만 자) 안에 들어올 때까지 크기·화질을 낮춰가며 변환
+async function fileToDataURL(file) {
+  const img = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  let size = 480, q = 0.72, out;
+  do {
+    const scale = Math.min(1, size / Math.max(img.width, img.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    out = canvas.toDataURL('image/jpeg', q);
+    size *= 0.85;
+    q -= 0.08;
+  } while (out.length > 45000 && q > 0.3);
+  return out;
+}
+
+function setPhoto(v) {
+  $('photoData').value = v || '';
+  $('photoPreview').style.display = v ? '' : 'none';
+  $('photoPreview').style.backgroundImage = v ? `url('${v}')` : '';
+  $('photoPick').style.display = v ? 'none' : '';  // 사진이 있으면 선택 버튼 숨김
+}
+
+$('photoPick').addEventListener('click', () => $('photoFile').click());
+
+$('photoFile').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const pick = $('photoPick');
+  pick.disabled = true;
+  try {
+    setPhoto(await fileToDataURL(file));
+  } catch (err) {
+    alert('사진을 불러오지 못했어요: ' + err);
+  } finally {
+    pick.disabled = false;
+    e.target.value = '';  // 같은 파일을 다시 선택해도 change가 발생하도록
+  }
+});
+
+$('photoRemove').addEventListener('click', () => setPhoto(''));
+
+$('fab').addEventListener('click', () => {
+  editIdx = null;
+  $('form').reset();
+  setPhoto('');
+  $('dateField').value = new Date().toISOString().slice(0, 10);
+  $('modalTitle').textContent = '추억 남기기';
+  $('deleteBtn').style.display = 'none';
+  $('modal').classList.add('open');
+});
+
+// 카드 클릭 → 수정 모드로 모달 열기
+document.addEventListener('click', e => {
+  const card = e.target.closest('.card[data-idx]');
+  if (!card) return;
+  const r = records.find(x => x._i === Number(card.dataset.idx));
+  if (!r) return;
+  editIdx = r._i;
+  const f = $('form').elements;
+  f['방문일'].value = fmtDate(r.방문일);
+  f['별점'].value = String(Number(r.별점) || 5);
+  f['장소명'].value = r.장소명 || '';
+  f['카테고리'].value = r.카테고리 || '카페';
+  f['지역'].value = r.지역 || '제주시';
+  f['동행자'].value = r.동행자 || '';
+  f['한줄평'].value = r.한줄평 || '';
+  setPhoto(r.사진 || '');
+  $('modalTitle').textContent = '추억 수정';
+  $('deleteBtn').style.display = '';
+  $('modal').classList.add('open');
+});
+
+$('deleteBtn').addEventListener('click', async () => {
+  if (editIdx === null) return;
+  if (!confirm('이 추억을 삭제할까요? 되돌릴 수 없어요.')) return;
+  const btn = $('deleteBtn');
+  btn.disabled = true;
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'delete', row: editIdx }),
+    });
+    $('modal').classList.remove('open');
+    $('form').reset();
+    await load();
+  } catch (err) {
+    alert('삭제에 실패했어요: ' + err);
+  } finally {
+    btn.disabled = false;
+  }
+});
+$('cancelBtn').addEventListener('click', () => $('modal').classList.remove('open'));
+$('modal').addEventListener('click', e => { if (e.target === $('modal')) $('modal').classList.remove('open'); });
+
+/* ── 기록 추가 ── */
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '저장 중…';
+
+  const record = Object.fromEntries(new FormData(e.target));
+  record.별명 = nickname;
+  if (editIdx !== null) {
+    record.action = 'update';
+    record.row = editIdx;
+  }
+
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },  // JSON으로 보내면 CORS preflight에 막힘
+      body: JSON.stringify(record),
+    });
+    $('modal').classList.remove('open');
+    e.target.reset();
+    await load();
+  } catch (err) {
+    alert('저장에 실패했어요: ' + err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '저장';
+  }
+});
+
+// 스플래시: 최소 1.4초는 보여주고, 데이터 로드가 끝나면 부드럽게 사라짐
+const splashMinTime = new Promise(r => setTimeout(r, 1400));
+Promise.all([load(), splashMinTime]).then(() => {
+  $('splash').classList.add('hide');
+  if (!nickname) openNickModal();
+});
+</script>
+</body>
+</html>
