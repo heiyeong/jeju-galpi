@@ -194,6 +194,7 @@
   .map-reset:hover { background: #fff; }
   .map-card svg { width: 100%; height: auto; display: block; }
   .region-spot { cursor: pointer; }
+  .region-spot .hit { fill: transparent; pointer-events: all; }
   .region-spot .dot {
     fill: var(--sea);
     stroke: #fff; stroke-width: 2.5;
@@ -222,10 +223,11 @@
     padding: 7px 15px;
     font-size: .84rem;
     font-family: inherit;
+    color: var(--stone);
     cursor: pointer;
     transition: .15s;
   }
-  .chip:hover { border-color: var(--sea); }
+  .chip:hover { border-color: var(--sea); color: var(--sea-deep); }
   .chip.on { background: var(--sea); color: #fff; border-color: var(--sea); }
 
   /* ── 기록 카드 ── */
@@ -433,12 +435,12 @@
     border-radius: 14px;
     padding: 16px;
   }
-  .conquest-head {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: .9rem; font-weight: 700;
-    margin-bottom: 10px;
+  .section-title.conquest-title {
+    display: flex; align-items: center; gap: 10px;
   }
   .conquest-pct { color: var(--sea); font-size: 1.05rem; font-weight: 800; }
+  /* 리포트 섹션 제목: 카드 모서리(둥근 부분)와 시작점이 어긋나 보여서 살짝 안쪽으로 */
+  #screen-report .section-title { padding-left: 6px; }
   .bar {
     height: 10px; border-radius: 5px;
     background: var(--stone-light);
@@ -548,9 +550,11 @@
   .modal-box {
     background: #fff;
     border-radius: 20px 20px 0 0;
-    padding: 22px 22px 28px;
+    padding: 22px 22px calc(28px + env(safe-area-inset-bottom, 0px));
     width: 100%; max-width: 480px;
-    max-height: 88vh; overflow-y: auto;
+    max-height: 76vh;
+    max-height: 76dvh;  /* 아이폰 사파리에서 주소창 높이를 뺀 실제 화면 기준 */
+    overflow-y: auto;
     animation: sheetUp .3s ease both;
   }
   @keyframes sheetUp { 0% { transform: translateY(60px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
@@ -734,11 +738,11 @@
         <button type="button" class="seg-btn" data-scope="year">이번 해</button>
       </div>
 
-      <div class="conquest" style="margin-top:14px">
-        <div class="conquest-head">
-          <span>제주 정복률</span>
-          <span class="conquest-pct" id="conquestPct">0%</span>
-        </div>
+      <div class="section-title conquest-title">
+        <span>제주 정복률</span>
+        <span class="conquest-pct" id="conquestPct">0%</span>
+      </div>
+      <div class="conquest">
         <div class="bar"><div class="bar-fill" id="conquestBar"></div></div>
         <div class="conquest-regions" id="conquestRegions"></div>
       </div>
@@ -1117,8 +1121,13 @@ function renderMap() {
     const on = currentRegion === rg.name;
     const pillW = rg.name.length * 12 + 14;
     const pillY = rg.y + radius + 7;
+    // 점(dot)과 라벨(pill)을 하나의 넓은 터치 영역으로 이어붙임 (모바일에서 탭 실패 방지)
+    const hitW = pillW;
+    const hitTop = rg.y - radius - 10;
+    const hitH = (pillY + 18 + 10) - hitTop;
     return `
       <g class="region-spot ${on ? 'on' : ''}" data-region="${rg.name}">
+        <rect class="hit" x="${rg.x - hitW / 2}" y="${hitTop}" width="${hitW}" height="${hitH}"/>
         <circle class="ring" cx="${rg.x}" cy="${rg.y}" r="${radius}" style="transform-origin:${rg.x}px ${rg.y}px"/>
         <circle class="dot" cx="${rg.x}" cy="${rg.y}" r="${radius}" opacity="${n ? 1 : .4}"/>
         <text class="count" x="${rg.x}" y="${rg.y + 4}">${n || ''}</text>
