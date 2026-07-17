@@ -174,8 +174,8 @@
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 20px;
-    padding: 12px 14px 2px;
-    margin: 16px 18px 0;
+    padding: 10px 10px 0;
+    margin: 14px 12px 0;
     box-shadow: 0 4px 20px rgba(0,0,0,.07);
   }
   .map-reset {
@@ -209,8 +209,8 @@
   .region-spot.on .ring { animation: ripple 1.8s ease-out infinite; }
   @keyframes ripple { 0% { opacity: .7; transform: scale(1); } 100% { opacity: 0; transform: scale(1.9); } }
   .region-spot text { font-family: 'Pretendard', sans-serif; pointer-events: none; }
-  .region-spot .count { fill: #fff; font-size: 11px; font-weight: 800; text-anchor: middle; }
-  .region-spot .label { fill: var(--sea-deep); font-size: 11px; font-weight: 700; text-anchor: middle; }
+  .region-spot .count { fill: #fff; font-size: 12.5px; font-weight: 800; text-anchor: middle; }
+  .region-spot .label { fill: var(--sea-deep); font-size: 12.5px; font-weight: 700; text-anchor: middle; }
   .region-spot .label-bg { fill: #fff; opacity: .92; filter: drop-shadow(0 1px 3px rgba(0,0,0,.12)); }
   .map-hint { text-align: center; font-size: .76rem; color: var(--muted); padding: 6px 0 10px; }
 
@@ -386,6 +386,7 @@
     margin: 84px auto 56px;
     border-radius: 50%;
     background: var(--sea-light);
+    border: 1px solid #d3e6ee;
     display: flex; align-items: center; justify-content: center;
   }
   .recall-idle svg { width: 46px; height: 46px; color: var(--sea); }
@@ -439,8 +440,10 @@
     display: flex; align-items: center; gap: 10px;
   }
   .conquest-pct { color: var(--sea); font-size: 1.05rem; font-weight: 800; }
-  /* 리포트 섹션 제목: 카드 모서리(둥근 부분)와 시작점이 어긋나 보여서 살짝 안쪽으로 */
-  #screen-report .section-title { padding-left: 6px; }
+  /* 리포트 섹션 제목: 카드 모서리와 맞게 살짝 안쪽으로, 섹션끼리는 넉넉히 띄워 구분 */
+  #screen-report .section-title { padding-left: 6px; margin-top: 36px; }
+  /* 홈 화면도 섹션(최근 추억, 빈 갈피 채우기) 사이를 넉넉히 띄워 구분 */
+  #screen-home .section-title { margin-top: 36px; }
   .bar {
     height: 10px; border-radius: 5px;
     background: var(--stone-light);
@@ -553,10 +556,14 @@
     padding: 22px 22px calc(28px + env(safe-area-inset-bottom, 0px));
     width: 100%; max-width: 480px;
     max-height: 76vh;
-    max-height: 76dvh;  /* 아이폰 사파리에서 주소창 높이를 뺀 실제 화면 기준 */
+    max-height: 76svh;  /* 아이폰 사파리 주소창이 늘고 줄어도 변하지 않는 화면 기준 */
     overflow-y: auto;
     animation: sheetUp .3s ease both;
   }
+  /* 추억 남기기/수정 시트: 항상 같은 높이로 고정 (열 때마다 위치가 달라 보이는 것 방지) */
+  #modal .modal-box { height: 76vh; height: 76svh; }
+  /* 시트가 열려 있는 동안 뒤 화면 스크롤 잠금 — 방문일 등 입력 시 화면이 위로 밀리는 현상 방지 */
+  html:has(.modal.open) { overflow: hidden; }
   @keyframes sheetUp { 0% { transform: translateY(60px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
   .modal-box h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; }
   .field { margin-bottom: 16px; }
@@ -677,13 +684,13 @@
     </div>
     <div class="map-card" style="margin-top:12px">
       <button class="map-reset" id="mapReset" type="button" style="display:none">전체 보기</button>
-      <svg viewBox="0 30 520 212" id="jejuMap">
+      <svg viewBox="20 38 480 204" id="jejuMap">
         <defs>
           <filter id="islandShadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#1d5a75" flood-opacity="0.18"/>
           </filter>
         </defs>
-        <rect x="0" y="30" width="520" height="212" rx="18" fill="#d9ecf4"/>
+        <rect x="20" y="38" width="480" height="204" rx="16" fill="#d9ecf4"/>
         <g stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity=".5" fill="none">
           <path d="M 40 40 q 10 -6 20 0 q 10 6 20 0"/>
           <path d="M 440 220 q 10 -6 20 0 q 10 6 20 0"/>
@@ -776,7 +783,7 @@
 <div class="modal center" id="nickModal">
   <div class="modal-box nick-box">
     <h2>별명으로 시작하기</h2>
-    <p class="nick-desc">회원가입 없이 별명으로 내 기록을 구분해요.<br>같은 별명으로 접속하면 언제든<br>내 추억을 다시 볼 수 있어요.</p>
+    <p class="nick-desc">가입 없이 별명 하나로 내 추억을 모아요.</p>
     <div class="field">
       <input id="nickInput" placeholder="예: 귤도둑" maxlength="12" autocomplete="off">
     </div>
@@ -1116,23 +1123,23 @@ function renderMap() {
 
   $('spots').innerHTML = REGIONS.map(rg => {
     const n = counts[rg.name] || 0;
-    const rMax = 16, rMin = 9;
+    const rMax = 19, rMin = 12;
     const radius = n ? Math.min(rMax, rMin + n * 2) : rMin;
     const on = currentRegion === rg.name;
-    const pillW = rg.name.length * 12 + 14;
+    const pillW = rg.name.length * 13 + 16;
     const pillY = rg.y + radius + 7;
     // 점(dot)과 라벨(pill)을 하나의 넓은 터치 영역으로 이어붙임 (모바일에서 탭 실패 방지)
     const hitW = pillW;
     const hitTop = rg.y - radius - 10;
-    const hitH = (pillY + 18 + 10) - hitTop;
+    const hitH = (pillY + 20 + 10) - hitTop;
     return `
       <g class="region-spot ${on ? 'on' : ''}" data-region="${rg.name}">
         <rect class="hit" x="${rg.x - hitW / 2}" y="${hitTop}" width="${hitW}" height="${hitH}"/>
         <circle class="ring" cx="${rg.x}" cy="${rg.y}" r="${radius}" style="transform-origin:${rg.x}px ${rg.y}px"/>
         <circle class="dot" cx="${rg.x}" cy="${rg.y}" r="${radius}" opacity="${n ? 1 : .4}"/>
         <text class="count" x="${rg.x}" y="${rg.y + 4}">${n || ''}</text>
-        <rect class="label-bg" x="${rg.x - pillW / 2}" y="${pillY}" width="${pillW}" height="18" rx="9"/>
-        <text class="label" x="${rg.x}" y="${pillY + 13}">${rg.name}</text>
+        <rect class="label-bg" x="${rg.x - pillW / 2}" y="${pillY}" width="${pillW}" height="20" rx="10"/>
+        <text class="label" x="${rg.x}" y="${pillY + 14}">${rg.name}</text>
       </g>`;
   }).join('');
 
