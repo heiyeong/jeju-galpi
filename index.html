@@ -213,33 +213,6 @@
   .region-spot .label-bg { fill: #fff; opacity: .92; filter: drop-shadow(0 1px 3px rgba(0,0,0,.12)); }
   .map-hint { text-align: center; font-size: .76rem; color: var(--muted); padding: 6px 0 10px; }
 
-  /* ── 탐색 화면: 지도·검색·필터는 고정, 카드 목록만 스크롤 ── */
-  #screen-map.active {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - var(--nav-h) - env(safe-area-inset-bottom, 0px));
-    height: calc(100dvh - var(--nav-h) - env(safe-area-inset-bottom, 0px));
-    padding-bottom: 0;
-    overflow: hidden;
-  }
-  #screen-map .topbar,
-  #screen-map .map-card { flex-shrink: 0; }
-  #screen-map .pad {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-  #screen-map .pad > :not(#mapList) { flex-shrink: 0; }
-  #mapList {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    scrollbar-width: none;
-    padding-bottom: 24px;
-  }
-  #mapList::-webkit-scrollbar { display: none; }
-
   /* ── 필터 칩 ── */
   .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 16px; }
   .chip {
@@ -582,13 +555,27 @@
   }
   @keyframes sheetUp { 0% { transform: translateY(60px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
   .modal-box h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; }
-  .field { margin-bottom: 12px; }
-  .field label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 4px; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 6px; }
   .field input, .field select, .field textarea {
     width: 100%; border: 1px solid var(--line); border-radius: 10px;
-    padding: 10px 12px; font-family: inherit; font-size: .92rem;
+    padding: 12px; font-family: inherit;
+    font-size: 16px;  /* 16px 미만이면 iOS가 입력 시 화면을 자동 확대함 */
+    color: var(--text);
+    background: #fff;
+    -webkit-appearance: none;  /* iOS 기본 스타일(회색 배경·파란 글씨) 제거 */
+    appearance: none;
   }
-  .field textarea { resize: vertical; min-height: 64px; }
+  .field select {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a8580' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 36px;
+  }
+  .field input[type="date"] { min-height: 49px; }
+  .field input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+  .field textarea { resize: vertical; min-height: 72px; }
   .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--sea); border-color: transparent; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .photo-row { display: flex; align-items: center; gap: 12px; }
