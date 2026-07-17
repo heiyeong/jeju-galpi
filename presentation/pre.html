@@ -30,12 +30,22 @@
 		height: 810px;
 		transform-origin: center center;
 		opacity: 0;
-		visibility: hidden;
+		z-index: 0;
+		pointer-events: none;
 		transition: opacity 0.35s ease;
+		will-change: opacity;
 	}
+	/* 전환 중 아래에 깔려 화면을 불투명하게 덮는 이전 슬라이드 */
+	.slide.prev {
+		opacity: 1;
+		z-index: 1;
+		transition: none;
+	}
+	/* 위에서 페이드인 되는 현재 슬라이드 */
 	.slide.active {
 		opacity: 1;
-		visibility: visible;
+		z-index: 2;
+		pointer-events: auto;
 	}
 	.slide img {
 		display: block;
@@ -54,7 +64,7 @@
 
 	/* ===== page 2 ===== */
 	.s2 .ft20{font-size:46px;font-family:'Pretendard',sans-serif;color:#1d5a75;}
-	.s2 .ft22{font-size:20px;font-family:'Pretendard',sans-serif;color:#898580;}
+	.s2 .ft22{font-size:19px;font-family:'Pretendard',sans-serif;color:#898580;}
 	.s2 .ft23{font-size:21px;font-family:'Pretendard',sans-serif;color:#2e2e2e;}
 	.s2 .ft24{font-size:17px;font-family:'Pretendard',sans-serif;color:#494949;}
 	.s2 .ft25{font-size:37px;font-family:'Pretendard',sans-serif;color:#ffffff;}
@@ -134,8 +144,8 @@
 	<!-- ===== 슬라이드 2 ===== -->
 	<div class="slide s2">
 		<img src="target002.png" alt="background image"/>
-		<p style="top:69px;left:86px" class="ft20"><b>왜&#160;</b>“<b>제주갈피</b>”<b>인가요?</b></p>
-		<p style="top:157px;left:89px" class="ft22">책의&#160;갈피(책갈피)처럼,&#160;제주에서의&#160;순간에&#160;끼워두는&#160;나만의&#160;기록</p>
+		<p style="top:63px;left:86px" class="ft20"><b>왜&#160;</b>“<b>제주갈피</b>”<b>인가요?</b></p>
+		<p style="top:150px;left:89px" class="ft22">책의&#160;갈피(책갈피)처럼,&#160;제주에서의&#160;순간에&#160;끼워두는&#160;나만의&#160;기록</p>
 		<p style="top:281px;left:221px" class="ft23"><b>타켓&#160;유저</b></p>
 		<p style="top:323px;left:221px" class="ft24">제주를&#160;자주&#160;오거나,&#160;제주에&#160;거주하며&#160;일상을&#160;여행처럼&#160;즐기고&#160;기록을</p>
 		<p style="top:347px;left:221px" class="ft24">남기고&#160;싶은&#160;분들</p>
@@ -154,8 +164,8 @@
 	<!-- ===== 슬라이드 3 ===== -->
 	<div class="slide s3">
 		<img src="target003.png" alt="background image"/>
-		<p style="top:63px;left:103px" class="ft30"><b>앱&#160;주요&#160;기능&#160;및&#160;흐름</b></p>
-		<p style="top:139px;left:106px" class="ft31">별명으로&#160;시작&#160;→&#160;홈에서&#160;한눈에&#160;보고,&#160;추억을&#160;남기고,&#160;추억을&#160;탐색/회상하고,&#160;리포트로&#160;돌아보기</p>
+		<p style="top:63px;left:86px" class="ft30"><b>앱&#160;주요&#160;기능&#160;및&#160;흐름</b></p>
+		<p style="top:150px;left:89px" class="ft31">별명으로&#160;시작&#160;→&#160;홈에서&#160;한눈에&#160;보고,&#160;추억을&#160;남기고,&#160;추억을&#160;탐색/회상하고,&#160;리포트로&#160;돌아보기</p>
 		<p style="top:206px;left:209px" class="ft32"><b>1</b></p>
 		<p style="top:708px;left:204px" class="ft33"><b>홈</b></p>
 		<p style="top:749px;left:160px" class="ft34">내&#160;기록&#160;한눈에</p>
@@ -232,8 +242,24 @@
 	}
 
 	function show(n) {
-		idx = (n + total) % total;
-		slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+		const next = (n + total) % total;
+		if (next === idx) return;
+		const outgoing = slides[idx];
+		const incoming = slides[next];
+
+		// 나가는 슬라이드는 불투명한 채로 아래에 깔아두고,
+		// 들어오는 슬라이드를 그 위에서 페이드인 → 배경이 비치지 않아 깜빡임 없음
+		outgoing.classList.remove('active');
+		outgoing.classList.add('prev');
+		incoming.classList.add('active');
+
+		// 페이드인이 끝나면 아래 깔린 이전 슬라이드를 정리
+		const cleanup = () => outgoing.classList.remove('prev');
+		incoming.addEventListener('transitionend', cleanup, { once: true });
+		// transitionend 누락 대비 안전장치
+		setTimeout(cleanup, 400);
+
+		idx = next;
 		document.getElementById('cur').textContent = idx + 1;
 	}
 
