@@ -4,7 +4,7 @@
 
 **Live Demo** : https://heiyeong.github.io/jeju-galpi/
 
-![제주갈피 미리보기](scratch_shots.png)
+![제주갈피 미리보기](presentation/target003.png)
 
 <br>
 
@@ -51,8 +51,8 @@
 ```
 ├─ index.html                 # 앱 본체 (홈 · 기록 · 탐색 · 회상 · 리포트)
 ├─ favicon.png                # 파비콘
-├─ og-image.png                # 카카오톡/SNS 링크 미리보기 이미지
-└─ presentation/               # 발표자료 (HTML / PPTX / PDF)
+├─ og-image.png               # 카카오톡/SNS 링크 미리보기 이미지
+└─ presentation/              # 발표자료 (HTML 슬라이드)
 ```
 
 <br>
@@ -71,5 +71,4 @@ npx serve .
 
 ## 발표자료
 
-- [presentation/제주갈피_발표자료.pptx](presentation/제주갈피_발표자료.pptx)
-- [presentation/제주갈피_발표자료.pdf](presentation/제주갈피_발표자료.pdf)
+- [발표자료 보기 (HTML 슬라이드)](https://heiyeong.github.io/jeju-galpi/presentation/pre.html) — ← → 방향키로 넘겨보기
